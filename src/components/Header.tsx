@@ -25,8 +25,8 @@ interface HeaderProps {
   onPrintReport: () => void;
   onRefreshData: () => void;
   isLoading: boolean;
-  activeView: 'table' | 'employee' | 'print';
-  setActiveView: (view: 'table' | 'employee' | 'print') => void;
+  activeView: 'daily' | 'table' | 'employee' | 'print';
+  setActiveView: (view: 'daily' | 'table' | 'employee' | 'print') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -109,34 +109,34 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* View Tabs & Export Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-800">
+        {/* View Tabs & Export Bar - PC View (Hidden on mobile since mobile only shows Daily Present) */}
+        <div className="hidden md:flex items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-800">
           
-          {/* Navigation View Switcher */}
+          {/* Navigation View Switcher (PC: Full Dashboard, Staff Report, Print Preview - Daily Present is hidden on PC) */}
           <div className="flex items-center bg-slate-950 p-1 rounded-2xl border border-slate-800">
             <button
               onClick={() => setActiveView('table')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
                 activeView === 'table'
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              In-Time Dashboard
+              Full Dashboard
             </button>
             <button
               onClick={() => setActiveView('employee')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
                 activeView === 'employee'
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              Individual Staff Report
+              Staff Report
             </button>
             <button
               onClick={() => setActiveView('print')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
                 activeView === 'print'
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
@@ -146,18 +146,27 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          {/* Export & Action Buttons - Print ONLY */}
+          {/* Export & Action Buttons */}
           <div className="flex items-center gap-2">
             <button
               onClick={onPrintReport}
               className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-1.5 rounded-xl text-xs font-semibold border border-slate-700 transition cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5 text-slate-300" />
-              <span>Print</span>
+              <span>Print / PDF</span>
             </button>
           </div>
 
         </div>
+
+        {/* Mobile View Indicator (Mobile view only shows Daily Present) */}
+        <div className="flex md:hidden items-center justify-between mt-3 pt-2.5 border-t border-slate-800/80 text-xs text-slate-400">
+          <span className="flex items-center gap-1.5 font-semibold text-emerald-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            Mobile View: Daily Present Mode
+          </span>
+        </div>
+
       </div>
     </header>
   );

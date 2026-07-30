@@ -36,6 +36,7 @@ import { AddLogModal } from './components/AddLogModal';
 import { ImportCsvModal } from './components/ImportCsvModal';
 import { PrintableReportView } from './components/PrintableReportView';
 import { LoginPage } from './components/LoginPage';
+import { DailyAttendanceView } from './components/DailyAttendanceView';
 
 import { CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
@@ -45,11 +46,38 @@ export default function App() {
   );
   const [currentUser, setCurrentUser] = useState<SupabaseUser | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
+
+  // Persistent App Login State (Once-login on device/app)
+  const [isAppLoggedIn, setIsAppLoggedIn] = useState<boolean>(() => {
+    return (
+      localStorage.getItem('aditto_app_logged_in') === 'true' ||
+      sessionStorage.getItem('aditto_app_logged_in') === 'true'
+    );
+  });
+
   const [shiftSettings] = useState<ShiftSettings>(DEFAULT_SHIFT_SETTINGS);
   const [records, setRecords] = useState<AttendanceRecord[]>(INITIAL_DEMO_RECORDS);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeView, setActiveView] = useState<'table' | 'employee' | 'print'>('table');
+  const [isMobile, setIsMobile] = useState<boolean>(() => window.innerWidth < 768);
+  const [activeView, setActiveView] = useState<'daily' | 'table' | 'employee' | 'print'>(() => {
+    return window.innerWidth < 768 ? 'daily' : 'table';
+  });
   const [selectedStaffForReport, setSelectedStaffForReport] = useState<string>('');
+
+  // Handle responsive view rules: Mobile only shows daily, PC hides daily
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile && activeView === 'daily') {
+        setActiveView('table');
+      } else if (mobile) {
+        setActiveView('daily');
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [activeView]);
 
   // Enforce dark mode
   useEffect(() => {
@@ -97,6 +125,10 @@ export default function App() {
     try {
       await signOutUser();
       setCurrentUser(null);
+      setIsAppLoggedIn(false);
+      localStorage.removeItem('aditto_app_logged_in');
+      localStorage.removeItem('aditto_user_email');
+      sessionStorage.removeItem('aditto_app_logged_in');
       showToast('Logged out of portal successfully.', 'info');
     } catch (err: any) {
       showToast(err.message || 'Logout failed', 'error');
@@ -304,7 +336,7 @@ export default function App() {
   }
 
   // Without login none can access any part of this web app
-  if (!currentUser) {
+  if (!currentUser && !isAppLoggedIn) {
     return (
       <>
         {toast && (
@@ -326,7 +358,10 @@ export default function App() {
           </div>
         )}
         <LoginPage
-          onLoginSuccess={(msg) => showToast(msg, 'success')}
+          onLoginSuccess={(msg) => {
+            setIsAppLoggedIn(true);
+            showToast(msg, 'success');
+          }}
         />
       </>
     );
@@ -375,8 +410,15 @@ export default function App() {
       {/* Main Body Canvas */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
-        {/* Printable View */}
-        {activeView === 'print' ? (
+        {/* Mobile View ONLY shows Daily Present. PC View hides Daily Present option */}
+        {isMobile ? (
+          <DailyAttendanceView
+            records={records}
+            allEmployees={allEmployees}
+            onOpenAddModal={() => setIsAddModalOpen(true)}
+            onOpenFullDashboard={() => {}}
+          />
+        ) : activeView === 'print' ? (
           <PrintableReportView
             records={filteredRecords}
             allRecords={records}
