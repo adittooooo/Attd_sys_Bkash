@@ -1,0 +1,6 @@
+{
+  "name": "Adlu Trade International - Attendance System",
+  "description": "Attendance report generating web application for Adlu Trade International with Supabase integration, real-time metrics, printable reports, and Excel/PDF exports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
